@@ -1,0 +1,59 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29123.89
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cav94mat.ExpandR", "src\cav94mat.ExpandR.csproj", "{D3589BC1-CCD2-44D5-98F5-CFCC989A7914}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demos", "Demos", "{D05EAD6C-41C9-42D1-95B9-31CBC51FFD8A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{539539CE-69C7-4E3C-B7DA-58E0937EEACB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExpandR.Demo", "demo\ExpandR.Demo\ExpandR.Demo.csproj", "{3E0E9F75-0D27-477D-A254-E643742FD4F5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExpandR.DemoApp", "demo\ExpandR.DemoApp\ExpandR.DemoApp.csproj", "{CD81510C-1919-4A7A-BE67-D26CDBAF94C0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExpandR.DemoApp.Plugin", "demo\ExpandR.DemoApp.Plugin\ExpandR.DemoApp.Plugin.csproj", "{EEDBFE3D-9E09-4546-ACD6-B0AF8E51EFED}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cav94mat.ExpandR.Tests", "test\cav94mat.ExpandR.Tests.csproj", "{62EB477F-02AE-4A51-9C65-D4CE4DB03D32}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D3589BC1-CCD2-44D5-98F5-CFCC989A7914}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3589BC1-CCD2-44D5-98F5-CFCC989A7914}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3589BC1-CCD2-44D5-98F5-CFCC989A7914}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3589BC1-CCD2-44D5-98F5-CFCC989A7914}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E0E9F75-0D27-477D-A254-E643742FD4F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E0E9F75-0D27-477D-A254-E643742FD4F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E0E9F75-0D27-477D-A254-E643742FD4F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E0E9F75-0D27-477D-A254-E643742FD4F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD81510C-1919-4A7A-BE67-D26CDBAF94C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD81510C-1919-4A7A-BE67-D26CDBAF94C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD81510C-1919-4A7A-BE67-D26CDBAF94C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD81510C-1919-4A7A-BE67-D26CDBAF94C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEDBFE3D-9E09-4546-ACD6-B0AF8E51EFED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEDBFE3D-9E09-4546-ACD6-B0AF8E51EFED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEDBFE3D-9E09-4546-ACD6-B0AF8E51EFED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEDBFE3D-9E09-4546-ACD6-B0AF8E51EFED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62EB477F-02AE-4A51-9C65-D4CE4DB03D32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62EB477F-02AE-4A51-9C65-D4CE4DB03D32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62EB477F-02AE-4A51-9C65-D4CE4DB03D32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62EB477F-02AE-4A51-9C65-D4CE4DB03D32}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3E0E9F75-0D27-477D-A254-E643742FD4F5} = {D05EAD6C-41C9-42D1-95B9-31CBC51FFD8A}
+		{CD81510C-1919-4A7A-BE67-D26CDBAF94C0} = {D05EAD6C-41C9-42D1-95B9-31CBC51FFD8A}
+		{EEDBFE3D-9E09-4546-ACD6-B0AF8E51EFED} = {D05EAD6C-41C9-42D1-95B9-31CBC51FFD8A}
+		{62EB477F-02AE-4A51-9C65-D4CE4DB03D32} = {539539CE-69C7-4E3C-B7DA-58E0937EEACB}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8CE748C6-73D4-4051-8871-AC965F95403B}
+	EndGlobalSection
+EndGlobal
