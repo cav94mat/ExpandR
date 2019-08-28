@@ -1,5 +1,4 @@
-﻿using System;
-using ExpandR.DemoAPI;
+﻿using ExpandR.DemoAPI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 

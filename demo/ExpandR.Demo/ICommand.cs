@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ExpandR.DemoAPI
+﻿namespace ExpandR.DemoAPI
 {
     public interface ICommand
     {

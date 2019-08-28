@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ExpandR.DemoAPI;
+﻿using ExpandR.DemoAPI;
 using Microsoft.Extensions.Configuration;
 using con = System.Console;
 namespace ExpandR.Demo.Defaults

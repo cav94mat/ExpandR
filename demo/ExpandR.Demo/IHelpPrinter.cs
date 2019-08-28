@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ExpandR.DemoAPI;
+﻿using ExpandR.DemoAPI;
 
 namespace ExpandR.Demo
 {

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using cav94mat.ExpandR;
+﻿using cav94mat.ExpandR;
 using ExpandR.Demo;
 using ExpandR.DemoAPI;
 using ExpandR.DemoApp.Plugin;

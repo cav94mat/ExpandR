@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace cav94mat.ExpandR
+﻿namespace cav94mat.ExpandR
 {
     /// <summary>
     /// This interface is to be inherited, or implemented by ExpandR compatible entry-point classes.
