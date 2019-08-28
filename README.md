@@ -7,7 +7,7 @@ A dependency-injection based plugin-system coded against
 
 ## How does it work?
 The ***host*** - in general the main application - declares and _exposes_ a set of service interfaces, which can be
-implemented by one or more ***plugin(s)*** (external assemblies), and/or even by the host itself - e.g. if there is no
+implemented by one or more ***plugin(s)*** (external assemblies), and/or even by the host itself - e.g. in case there is no
 plugin implementing it first:
 
 ```csharp
@@ -81,4 +81,7 @@ namespace MyPlugin {
 ```
 > :bulb: For the sake of brevity, the declarations of `FancyHelpPrinter` and `ConfCommand` are ommitted, since irrelevant.
 
+> :bulb: The `Entrypoint` attribute and the `IEntrypoint` interface used in this example are part of ExpandR.
+> It's possible to derive these types in order to create custom entry-points.
+ 
 
