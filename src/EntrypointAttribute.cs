@@ -1,9 +1,12 @@
 ﻿using System;
-
+using cav94mat.ExpandR.Host;
 namespace cav94mat.ExpandR
 {
     /// <summary>
     /// This attribute should be applied globally to the plugin assembly, in order to specify its entrypoint.
+    /// <para>
+    /// Custom entry-points can be defined by deriving this type on the host side, and passing it as type-argument to the appropriate <see cref="ServiceCollectionExtensions.AddExpandR{T}"> AddExpandr&lt;T&gt; call</see>.
+    /// </para>
     /// </summary>
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false)]
     public class EntrypointAttribute : Attribute

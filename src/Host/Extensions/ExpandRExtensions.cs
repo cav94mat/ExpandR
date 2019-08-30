@@ -10,94 +10,284 @@ namespace cav94mat.ExpandR.Host
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class ExpandRExtensions
     {
-        #region Load
-        public static void Load(this IExpandR expandr, FileInfo dll)
-            => expandr.Load(Assembly.LoadFrom(dll.FullName));
-        public static void Load(this IExpandR expandr, DirectoryInfo dllsFrom)
+        #region LoadPlugin(s)
+        /// <summary>
+        /// Searches for a compatible entry-point in the specified file, and call its <see cref="IEntrypoint.Setup">Setup</see> method.
+        /// </summary>
+        /// <param name="dll">The plugin assembly binary, to be loaded via reflection.</param>
+        /// <exception cref="EntryPointNotFoundException">If the specified assembly doesn't have a suitable entry-point.</exception>        
+        public static void LoadPlugin(this IExpandR expandr, FileInfo dll)
+            => expandr.LoadPlugin(Assembly.LoadFrom(dll.FullName));
+        /// <summary>
+        /// Searches for a compatible entry-point in every <c>.dll</c> file found in the specified directory, and call its <see cref="IEntrypoint.Setup">Setup</see> method.
+        /// </summary>
+        /// <param name="dllsFrom">The plugin assemblies directory, that are loaded via reflection after being sorted alphabetically.</param>
+        /// <exception cref="EntryPointNotFoundException">If one of the assemblies doesn't have a suitable entry-point.</exception>        
+        public static void LoadPlugins(this IExpandR expandr, DirectoryInfo dllsFrom)
         {
             foreach (var dll in dllsFrom.GetFiles("*.dll").OrderBy(dllPath => dllPath.Name))
-                expandr.Load(dll);
+                expandr.LoadPlugin(dll);
         }
-        public static void Load(this IExpandR expandr, string dllsPath)
+        /// <summary>
+        /// Searches for a compatible entry-point in every .dll file in the specified directory, and call its <see cref="IEntrypoint.Setup">Setup</see> method.
+        /// </summary>
+        /// <param name="dllsFrom">The plugin assemblies directory, that are loaded via reflection after being sorted alphabetically.</param>
+        /// <exception cref="EntryPointNotFoundException">If any of the assemblies doesn't have a suitable entry-point.</exception> 
+        public static void LoadPlugins(this IExpandR expandr, string dllsPath)
         {
             if (Directory.Exists(dllsPath))
-                expandr.Load(new DirectoryInfo(dllsPath));
+                expandr.LoadPlugins(new DirectoryInfo(dllsPath));
             else
-                expandr.Load(new FileInfo(dllsPath));
+                expandr.LoadPlugin(new FileInfo(dllsPath));
         }
         #endregion
-        #region Add
-        public static void Add<TService>(this IExpandR expandr, ServiceLifetime lifetime, bool multiple = false, params ServiceImplementation[] defaultImpls)
-            => expandr.Add(typeof(TService), lifetime, multiple, defaultImpls);
-        public static void Add<TService>(this IExpandR expandr, ServiceLifetime lifetime, bool multiple, Func<IServiceProvider, TService> defaultFactory)
-            => expandr.Add(typeof(TService), lifetime, multiple, ServiceImplementation.FromFactory(defaultFactory));        
-        public static void Add<TService>(this IExpandR expandr, ServiceLifetime lifetime, Func<IServiceProvider, TService> defaultFactory)
-            => expandr.Add<TService>(lifetime, false, defaultFactory);
-        public static void Add<TService, TDefaultImpl>(this IExpandR expandr, ServiceLifetime lifetime, bool multiple = false)
-            => expandr.Add(typeof(TService), lifetime, multiple, ServiceImplementation.FromType<TDefaultImpl>());
+        #region Expose
+        /// <summary>
+        /// Exposes a service type to ExpandR, so that plugins can implement it.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <param name="lifetime">The lifetime of the service.</param>
+        /// <param name="multiple">Whether the service can have multiple implementations, or at most one.</param>
+        /// <param name="defaultImpls">Default implementation(s) for the service.</param>
+        public static void Expose<TService>(this IExpandR expandr, ServiceLifetime lifetime, bool multiple = false, params ExposedImplementation[] defaultImpls)
+            => expandr.Expose(typeof(TService), lifetime, multiple, defaultImpls);
+        /// <summary>
+        /// Exposes a service type to ExpandR, so that plugins can implement it.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <param name="lifetime">The lifetime of the service.</param>
+        /// <param name="multiple">Whether the service can have multiple implementations, or at most one.</param>
+        /// <param name="defaultFactory">Default factory implementation for the service.</param>
+        public static void Expose<TService>(this IExpandR expandr, ServiceLifetime lifetime, bool multiple, Func<IServiceProvider, TService> defaultFactory)
+            => expandr.Expose(typeof(TService), lifetime, multiple, ExposedImplementation.FromFactory(defaultFactory));
+        /// <summary>
+        /// Exposes a service type to ExpandR, so that one plugin can implement it.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <param name="lifetime">The lifetime of the service.</param>
+        /// <param name="defaultFactory">Default factory implementation for the service.</param>
+        public static void Expose<TService>(this IExpandR expandr, ServiceLifetime lifetime, Func<IServiceProvider, TService> defaultFactory)
+            => expandr.Expose<TService>(lifetime, false, defaultFactory);
+        /// <summary>
+        /// Exposes a service type to ExpandR, so that plugins can implement it.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <typeparam name="TDefaultImpl">The default implementation type.</typeparam>
+        /// <param name="lifetime">The lifetime of the service.</param>
+        /// <param name="multiple">Whether the service can have multiple implementations, or at most one.</param>
+        public static void Expose<TService, TDefaultImpl>(this IExpandR expandr, ServiceLifetime lifetime, bool multiple = false)
+            => expandr.Expose(typeof(TService), lifetime, multiple, ExposedImplementation.FromType<TDefaultImpl>());
+        
+        /// <summary>
+        /// Exposes a transient service type to ExpandR, so that plugins can implement it.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <param name="multiple">Whether the service can have multiple implementations, or at most one.</param>
+        /// <param name="defaultImpls">Default implementation(s) for the service.</param>
+        public static void ExposeTransient<TService>(this IExpandR expandr, bool multiple = false, params ExposedImplementation[] defaultImpls)
+            => expandr.Expose<TService>(ServiceLifetime.Transient, multiple, defaultImpls);
+        /// <summary>
+        /// Exposes a transient service type to ExpandR, so that plugins can implement it.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <param name="multiple">Whether the service can have multiple implementations, or at most one.</param>
+        /// <param name="defaultFactory">Default factory implementation for the service.</param>
+        public static void ExposeTransient<TService>(this IExpandR expandr, bool multiple, Func<IServiceProvider, TService> defaultFactory)
+            => expandr.Expose<TService>(ServiceLifetime.Transient, multiple, defaultFactory);
+        /// <summary>
+        /// Exposes a transient service type to ExpandR, so that plugins can implement it.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>        
+        /// <param name="defaultFactory">Default factory implementation for the service.</param>
+        /// <param name="multiple">Whether the service can have multiple implementations, or at most one.</param>
+        public static void ExposeTransient<TService>(this IExpandR expandr, Func<IServiceProvider, TService> defaultFactory, bool multiple = false)
+            => expandr.ExposeTransient<TService>(multiple, defaultFactory);
+        /// <summary>
+        /// Exposes a transient service type to ExpandR, so that plugins can implement it.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <typeparam name="TDefaultImpl">The default implementation type.</typeparam>
+        /// <param name="multiple">Whether the service can have multiple implementations, or at most one.</param>
+        public static void ExposeTransient<TService, TDefaultImpl>(this IExpandR expandr, bool multiple = false)
+            => expandr.Expose<TService, TDefaultImpl>(ServiceLifetime.Transient, multiple);
 
-        public static void AddTransient<TService>(this IExpandR expandr, bool multiple = false, params ServiceImplementation[] defaultImpls)
-            => expandr.Add<TService>(ServiceLifetime.Transient, multiple, defaultImpls);
-        public static void AddTransient<TService>(this IExpandR expandr, bool multiple, Func<IServiceProvider, TService> factory)
-            => expandr.Add<TService>(ServiceLifetime.Transient, multiple, factory);
-        public static void AddTransient<TService>(this IExpandR expandr, Func<IServiceProvider, TService> factory, bool multiple = false)
-            => expandr.AddTransient<TService>(multiple, factory);
-        public static void AddTransient<TService, TDefaultImpl>(this IExpandR expandr, bool multiple = false)
-            => expandr.Add<TService, TDefaultImpl>(ServiceLifetime.Transient, multiple);
+        /// <summary>
+        /// Exposes a scoped service type to ExpandR, so that plugins can implement it.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <param name="multiple">Whether the service can have multiple implementations, or at most one.</param>
+        /// <param name="defaultImpls">Default implementation(s) for the service.</param>
+        public static void ExposeScoped<TService>(this IExpandR expandr, bool multiple = false, params ExposedImplementation[] defaultImpls)
+            => expandr.Expose<TService>(ServiceLifetime.Scoped, multiple, defaultImpls);
+        /// <summary>
+        /// Exposes a scoped service type to ExpandR, so that plugins can implement it.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <param name="multiple">Whether the service can have multiple implementations, or at most one.</param>
+        /// <param name="defaultFactory">Default factory implementation for the service.</param>
+        public static void ExposeScoped<TService>(this IExpandR expandr, bool multiple, Func<IServiceProvider, TService> defaultFactory)
+            => expandr.Expose<TService>(ServiceLifetime.Scoped, multiple, defaultFactory);
+        /// <summary>
+        /// Exposes a scoped service type to ExpandR, so that plugins can implement it.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>        
+        /// <param name="defaultFactory">Default factory implementation for the service.</param>
+        /// <param name="multiple">Whether the service can have multiple implementations, or at most one.</param>
+        public static void ExposeScoped<TService>(this IExpandR expandr, Func<IServiceProvider, TService> defaultFactory, bool multiple = false)
+            => expandr.ExposeScoped<TService>(multiple, defaultFactory);
+        /// <summary>
+        /// Exposes a scoped service type to ExpandR, so that plugins can implement it.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <typeparam name="TDefaultImpl">The default implementation type.</typeparam>
+        /// <param name="multiple">Whether the service can have multiple implementations, or at most one.</param>
+        public static void ExposeScoped<TService, TDefaultImpl>(this IExpandR expandr, bool multiple = false)
+            => expandr.Expose<TService, TDefaultImpl>(ServiceLifetime.Scoped, multiple);
 
+        /// <summary>
+        /// Exposes a singleton service type to ExpandR, so that plugins can implement it.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <param name="multiple">Whether the service can have multiple implementations, or at most one.</param>
+        /// <param name="defaultImpls">Default implementation(s) for the service.</param>
+        public static void ExposeSingleton<TService>(this IExpandR expandr, bool multiple = false, params ExposedImplementation[] defaultImpls)
+            => expandr.Expose<TService>(ServiceLifetime.Singleton, multiple, defaultImpls);
+        /// <summary>
+        /// Exposes a singleton service type to ExpandR, so that plugins can implement it.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <param name="multiple">Whether the service can have multiple implementations, or at most one.</param>
+        /// <param name="defaultFactory">Default factory implementation for the service.</param>
+        public static void ExposeSingleton<TService>(this IExpandR expandr, bool multiple, Func<IServiceProvider, TService> defaultFactory)
+            => expandr.Expose<TService>(ServiceLifetime.Singleton, multiple, defaultFactory);
+        /// <summary>
+        /// Exposes a singleton service type to ExpandR, so that plugins can implement it.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <param name="defaultFactory">Default factory implementation for the service.</param>        
+        /// <param name="multiple">Whether the service can have multiple implementations, or at most one.</param>
+        public static void ExposeSingleton<TService>(this IExpandR expandr, Func<IServiceProvider, TService> defaultFactory, bool multiple = false)
+            => expandr.ExposeSingleton<TService>(multiple, defaultFactory);
+        /// <summary>
+        /// Exposes a singleton service type to ExpandR, so that plugins can implement it.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <typeparam name="TDefaultImpl">The default implementation type.</typeparam>
+        /// <param name="multiple">Whether the service can have multiple implementations, or at most one.</param>
+        public static void ExposeSingleton<TService, TDefaultImpl>(this IExpandR expandr, bool multiple = false)
+            => expandr.Expose<TService, TDefaultImpl>(ServiceLifetime.Singleton, multiple);
+        /// <summary>
+        /// Exposes a singleton service type to ExpandR, so that plugins can implement it.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>            
+        /// <param name="multiple">Whether the service can have multiple implementations, or at most one.</param>
+        /// <param name="defaultInstance">Default instance implementation for the service.</param>    
+        public static void ExposeSingleton<TService>(this IExpandR expandr, bool multiple, TService defaultInstance)
+            => expandr.Expose<TService>(ServiceLifetime.Singleton, multiple, _ => defaultInstance);
+        /// <summary>
+        /// Exposes a singleton service type to ExpandR, so that plugins can implement it.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <param name="defaultInstance">Default instance implementation for the service.</param>    
+        public static void ExposeSingleton<TService>(this IExpandR expandr, TService defaultInstance)
+            => expandr.ExposeSingleton<TService>(false, _ => defaultInstance);
 
-        public static void AddScoped<TService>(this IExpandR expandr, bool multiple = false, params ServiceImplementation[] defaultImpls)
-            => expandr.Add<TService>(ServiceLifetime.Scoped, multiple, defaultImpls);
-        public static void AddScoped<TService>(this IExpandR expandr, bool multiple, Func<IServiceProvider, TService> factory)
-            => expandr.Add<TService>(ServiceLifetime.Scoped, multiple, factory);
-        public static void AddScoped<TService>(this IExpandR expandr, Func<IServiceProvider, TService> factory, bool multiple = false)
-            => expandr.AddScoped<TService>(multiple, factory);
-        public static void AddScoped<TService, TDefaultImpl>(this IExpandR expandr, bool multiple = false)
-            => expandr.Add<TService, TDefaultImpl>(ServiceLifetime.Scoped, multiple);
+        /// <summary>
+        /// Exposes a service type to ExpandR, so that plugins may provide multiple implementations.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>       
+        /// <param name="lifetime">The lifetime of the service.</param>
+        /// <param name="defaultImpls">Default implementations for the service.</param>    
+        public static void ExposeMulti<TService>(this IExpandR expandr, ServiceLifetime lifetime, params ExposedImplementation[] defaultImpls)
+            => expandr.Expose(typeof(TService), lifetime, true, defaultImpls);
+        /// <summary>
+        /// Exposes a service type to ExpandR, so that plugins may provide multiple implementations.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>       
+        /// <param name="lifetime">The lifetime of the service.</param>
+        /// <param name="defaultFactory">Default factory implementation for the service.</param>
+        public static void ExposeMulti<TService>(this IExpandR expandr, ServiceLifetime lifetime, Func<IServiceProvider, TService> defaultFactory)
+            => expandr.Expose<TService>(lifetime, true, defaultFactory);
+        /// <summary>
+        /// Exposes a service type to ExpandR, so that plugins may provide multiple implementations.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <typeparam name="TDefaultImpl">The default implementation type.</typeparam>
+        public static void ExposeMulti<TService, TDefaultImpl>(this IExpandR expandr)
+            => expandr.Expose<TService, TDefaultImpl>(ServiceLifetime.Singleton, true);
 
+        /// <summary>
+        /// Exposes a transient service type to ExpandR, so that plugins may provide multiple implementations.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <param name="defaultImpls">Default implementations for the service.</param>
+        public static void ExposeMultiTransient<TService>(this IExpandR expandr, params ExposedImplementation[] defaultImpls)
+            => expandr.Expose(typeof(TService), ServiceLifetime.Transient, true, defaultImpls);
+        /// <summary>
+        /// Exposes a transient service type to ExpandR, so that plugins may provide multiple implementations.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <param name="defaultFactory">Default factory implementation for the service.</param>
+        public static void ExposeMultiTransient<TService>(this IExpandR expandr, Func<IServiceProvider, TService> defaultFactory)
+            => expandr.Expose<TService>(ServiceLifetime.Transient, true, defaultFactory);
+        /// <summary>
+        /// Exposes a transient service type to ExpandR, so that plugins may provide multiple implementations.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>   
+        /// <typeparam name="TDefaultImpl">The default implementation type.</typeparam>
+        public static void ExposeMultiTransient<TService, TDefaultImpl>(this IExpandR expandr)
+            => expandr.Expose<TService, TDefaultImpl>(ServiceLifetime.Transient, true);
 
-        public static void AddSingleton<TService>(this IExpandR expandr, bool multiple = false, params ServiceImplementation[] defaultImpls)
-            => expandr.Add<TService>(ServiceLifetime.Singleton, multiple, defaultImpls);
-        public static void AddSingleton<TService>(this IExpandR expandr, bool multiple, Func<IServiceProvider, TService> factory)
-            => expandr.Add<TService>(ServiceLifetime.Singleton, multiple, factory);
-        public static void AddSingleton<TService>(this IExpandR expandr, Func<IServiceProvider, TService> factory, bool multiple = false)
-            => expandr.AddSingleton<TService>(multiple, factory);
-        public static void AddSingleton<TService, TDefaultImpl>(this IExpandR expandr, bool multiple = false)
-            => expandr.Add<TService, TDefaultImpl>(ServiceLifetime.Singleton, multiple);
-        public static void AddSingleton<TService>(this IExpandR expandr, bool multiple, TService defaultInstance)
-            => expandr.Add<TService>(ServiceLifetime.Singleton, multiple, _ => defaultInstance);
-        public static void AddSingleton<TService>(this IExpandR expandr, TService defaultInstance)
-            => expandr.AddSingleton<TService>(false, _ => defaultInstance);
+        /// <summary>
+        /// Exposes a scoped service type to ExpandR, so that plugins may provide multiple implementations.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <param name="defaultImpls">Default implementations for the service.</param>
+        public static void ExposeMultiScoped<TService>(this IExpandR expandr, params ExposedImplementation[] defaultImpls)
+            => expandr.Expose(typeof(TService), ServiceLifetime.Scoped, true, defaultImpls);
+        /// <summary>
+        /// Exposes a scoped service type to ExpandR, so that plugins may provide multiple implementations.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <param name="defaultFactory">Default factory implementation for the service.</param>
+        public static void ExposeMultiScoped<TService>(this IExpandR expandr, Func<IServiceProvider, TService> defaultFactory)
+            => expandr.Expose<TService>(ServiceLifetime.Scoped, true, defaultFactory);
+        /// <summary>
+        /// Exposes a scoped service type to ExpandR, so that plugins may provide multiple implementations.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>   
+        /// <typeparam name="TDefaultImpl">The default implementation type.</typeparam>
+        public static void ExposeMultiScoped<TService, TDefaultImpl>(this IExpandR expandr)
+            => expandr.Expose<TService, TDefaultImpl>(ServiceLifetime.Scoped, true);
 
-        public static void AddMulti<TService>(this IExpandR expandr, ServiceLifetime lifetime, params ServiceImplementation[] defaultImpls)
-            => expandr.Add(typeof(TService), lifetime, true, defaultImpls);
-        public static void AddMulti<TService>(this IExpandR expandr, ServiceLifetime lifetime, Func<IServiceProvider, TService> defaultFactory)
-            => expandr.Add<TService>(lifetime, true, defaultFactory);
-        public static void AddMulti<TService, TDefaultImpl>(this IExpandR expandr)
-            => expandr.Add<TService, TDefaultImpl>(ServiceLifetime.Singleton, true);
-
-        public static void AddMultiTransient<TService>(this IExpandR expandr, params ServiceImplementation[] defaultImpls)
-            => expandr.Add(typeof(TService), ServiceLifetime.Transient, true, defaultImpls);
-        public static void AddMultiTransient<TService>(this IExpandR expandr, Func<IServiceProvider, TService> defaultFactory)
-            => expandr.Add<TService>(ServiceLifetime.Transient, true, defaultFactory);
-        public static void AddMultiTransient<TService, TDefaultImpl>(this IExpandR expandr)
-            => expandr.Add<TService, TDefaultImpl>(ServiceLifetime.Transient, true);
-
-        public static void AddMultiScoped<TService>(this IExpandR expandr, params ServiceImplementation[] defaultImpls)
-            => expandr.Add(typeof(TService), ServiceLifetime.Scoped, true, defaultImpls);
-        public static void AddMultiScoped<TService>(this IExpandR expandr, Func<IServiceProvider, TService> defaultFactory)
-            => expandr.Add<TService>(ServiceLifetime.Scoped, true, defaultFactory);
-        public static void AddMultiScoped<TService, TDefaultImpl>(this IExpandR expandr)
-            => expandr.Add<TService, TDefaultImpl>(ServiceLifetime.Scoped, true);
-
-        public static void AddMultiSingleton<TService>(this IExpandR expandr, params ServiceImplementation[] defaultImpls)
-            => expandr.Add(typeof(TService), ServiceLifetime.Singleton, true, defaultImpls);
-        public static void AddMultiSingleton<TService>(this IExpandR expandr, Func<IServiceProvider, TService> defaultFactory)
-            => expandr.Add<TService>(ServiceLifetime.Singleton, true, defaultFactory);
-        public static void AddMultiSingleton<TService>(this IExpandR expandr, TService defaultInstance)
-            => expandr.Add<TService>(ServiceLifetime.Singleton, true, _ => defaultInstance);
-        public static void AddMultiSingleton<TService, TDefaultImpl>(this IExpandR expandr)
-            => expandr.Add<TService, TDefaultImpl>(ServiceLifetime.Singleton, true);
+        /// <summary>
+        /// Exposes a singleton service type to ExpandR, so that plugins may provide multiple implementations.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>
+        /// <param name="defaultImpls">Default implementations for the service.</param>
+        public static void ExposeMultiSingleton<TService>(this IExpandR expandr, params ExposedImplementation[] defaultImpls)
+            => expandr.Expose(typeof(TService), ServiceLifetime.Singleton, true, defaultImpls);
+        /// <summary>
+        /// Exposes a singleton service type to ExpandR, so that plugins may provide multiple implementations.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>   
+        /// <param name="defaultImpls">Default implementations for the service.</param>
+        public static void ExposeMultiSingleton<TService>(this IExpandR expandr, Func<IServiceProvider, TService> defaultFactory)
+            => expandr.Expose<TService>(ServiceLifetime.Singleton, true, defaultFactory);
+        /// <summary>
+        /// Exposes a singleton service type to ExpandR, so that plugins may provide multiple implementations.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>       
+        /// <param name="defaultInstance">Default instance implementations for the service.</param>
+        public static void ExposeMultiSingleton<TService>(this IExpandR expandr, TService defaultInstance)
+            => expandr.Expose<TService>(ServiceLifetime.Singleton, true, _ => defaultInstance);
+        /// <summary>
+        /// Exposes a singleton service type to ExpandR, so that plugins may provide multiple implementations.
+        /// </summary>
+        /// <typeparam name="TService">The service (interface) type.</typeparam>   
+        /// <typeparam name="TDefaultImpl">The default implementation type.</typeparam>
+        public static void ExposeMultiSingleton<TService, TDefaultImpl>(this IExpandR expandr)
+            => expandr.Expose<TService, TDefaultImpl>(ServiceLifetime.Singleton, true);
         #endregion
     }
 }

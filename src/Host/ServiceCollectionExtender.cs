@@ -5,17 +5,17 @@ using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace cav94mat.ExpandR.Host
-{
-    public class ServiceExtender : IServiceCollectionExtender
+{    
+    internal class ServiceCollectionExtender : IServiceCollectionExtender
     {
         private readonly IServiceCollection _services;
-        private readonly ServiceDefinitionsCollection _defs;
-        public ServiceExtender(IServiceCollection services, ServiceDefinitionsCollection defs)
+        private readonly ExposedServicesCollection _defs;
+        public ServiceCollectionExtender(IServiceCollection services, ExposedServicesCollection defs)
         {
             _services = services;
             _defs = defs;
         }        
-        public bool TryAdd(Type serviceType, ServiceImplementation serviceImpl, out ServiceExtensionResult result)
+        public bool TryAdd(Type serviceType, ExposedImplementation serviceImpl, out ServiceExtensionResult result)
         {
             result = ServiceExtensionResult.Implemented;
             if (!_defs.TryGetValue(serviceType, out var serviceDef))
@@ -30,7 +30,7 @@ namespace cav94mat.ExpandR.Host
             }
             return false;
         }     
-        public void Add(Type serviceType, ServiceImplementation serviceImpl)
+        public void Add(Type serviceType, ExposedImplementation serviceImpl)
         {
             if (!TryAdd(serviceType, serviceImpl, out var result))
             {

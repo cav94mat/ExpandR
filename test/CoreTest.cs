@@ -27,10 +27,10 @@ namespace cav94mat.ExpandR.Tests
             ioc.AddExpandR(configure =>
             {
                 // Services
-                configure.AddSingleton<IMockServiceA, FailingImplA>();
-                configure.AddTransient<IMockServiceB, MockImplB>();
+                configure.ExposeSingleton<IMockServiceA, FailingImplA>();
+                configure.ExposeTransient<IMockServiceB, MockImplB>();
                 // Plugins
-                configure.Load(TestAssembly); // Test plugin
+                configure.LoadPlugin(TestAssembly); // Test plugin
             });
             using var services = ioc.BuildServiceProvider();
             // Call the services
@@ -55,10 +55,10 @@ namespace cav94mat.ExpandR.Tests
             ioc.AddExpandR(configure =>
             {
                 // Services
-                configure.AddMultiSingleton<IMockServiceA, FailingImplA>();
-                configure.AddMultiTransient<IMockServiceB>();
+                configure.ExposeMultiSingleton<IMockServiceA, FailingImplA>();
+                configure.ExposeMultiTransient<IMockServiceB>();
                 // Plugins
-                configure.Load(TestAssembly); // Test plugin
+                configure.LoadPlugin(TestAssembly); // Test plugin
             });
             using var services = ioc.BuildServiceProvider();
             // Call the services

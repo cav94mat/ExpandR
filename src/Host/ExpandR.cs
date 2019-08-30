@@ -4,19 +4,25 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace cav94mat.ExpandR.Host
 {
-    public class ExpandR<T>: IExpandR where T : EntrypointAttribute
+    /// <summary>
+    /// Represents the core implementation of the ExpandR engine.
+    /// </summary>
+    /// <typeparam name="T">Custom entry-point attribute to be searched for in plugin assemblies.</typeparam>
+    internal sealed class ExpandR<T>: IExpandR where T : EntrypointAttribute
     {
         private readonly IServiceCollection _services;
-        private readonly ServiceDefinitionsCollection _defs = new ServiceDefinitionsCollection();
-        public ExpandR(IServiceCollection services)
+        private readonly ExposedServicesCollection _defs = new ExposedServicesCollection();
+        /// <summary>
+        /// Initializes a new instance of the engine.
+        /// </summary>
+        /// <param name="services">The host <see cref="IServiceCollection"/> where plugin services implementations are to be added.</param>
+        internal ExpandR(IServiceCollection services)
         {
             _services = services;
         }
-
-        public void Add(Type type, ServiceLifetime lifetime, bool multiple, params ServiceImplementation[] defaultImpl)
-            => _defs.Add(type, new ServiceDefinition(lifetime, multiple, defaultImpl));
-
-        public void Load(Assembly assembly)
+        public void Expose(Type type, ServiceLifetime lifetime, bool multiple, params ExposedImplementation[] defaultImpl)
+            => _defs.Add(type, new ExposedService(lifetime, multiple, defaultImpl));
+        public void LoadPlugin(Assembly assembly)
         {
             var attr = assembly.GetCustomAttribute<T>();
             if (attr is null)
@@ -24,11 +30,11 @@ namespace cav94mat.ExpandR.Host
             var entryPoint = attr.OnInitialization();
             if (entryPoint is null)
                 throw new EntryPointNotFoundException($"The extension entry-point was not properly initialized.");
-            entryPoint.Setup(new ServiceExtender(_services, _defs));
+            entryPoint.Setup(new ServiceCollectionExtender(_services, _defs));
         }
-        public void AddDefaults()
+        internal void AddDefaults()
         {
-            var ex = new ServiceExtender(_services, _defs);
+            var ex = new ServiceCollectionExtender(_services, _defs);
             foreach(var def in _defs)
                 foreach (var defaultImpl in def.Value.DefaultImplementations)
                     ex.TryAdd(def.Key, defaultImpl, out _);            

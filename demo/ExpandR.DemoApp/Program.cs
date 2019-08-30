@@ -24,12 +24,12 @@ namespace ExpandR.DemoApp
             services.AddSingleton<Program>();
             services.AddExpandR(pluggableServices =>
             {
-                pluggableServices.AddSingleton<IHelpPrinter, HelpPrinter>();
-                pluggableServices.AddMultiTransient<ICommand>(typeof(EchoCommand), typeof(HelpCommand));
+                pluggableServices.ExposeSingleton<IHelpPrinter, HelpPrinter>();
+                pluggableServices.ExposeMultiTransient<ICommand>(typeof(EchoCommand), typeof(HelpCommand));
 
                 // Search for plugins in the /plugins sub-directory
                 var plugDir = new DirectoryInfo(Directory.GetCurrentDirectory()).CreateSubdirectory("plugins");
-                pluggableServices.Load(plugDir);
+                pluggableServices.LoadPlugins(plugDir);
             });
         }
         public void Run(string[] args)
