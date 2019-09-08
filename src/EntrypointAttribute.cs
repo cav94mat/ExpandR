@@ -27,9 +27,11 @@ namespace cav94mat.ExpandR
         /// Tries creating an instance of the entry-point class (<see cref="Type"/>), to be safely casted to the specified interface or parent class.
         /// </summary>
         /// <typeparam name="T">Type the instance should be casted to prior returning.</typeparam>
-        /// <returns>An initialized instance, or null if any error occurs.</returns>
+        /// <returns>An initialized instance of the entry-point.</returns>
+        /// <exception cref="PluginException">If the entry-point cannot be initialized and casted to T.</exception>
         protected T Initialize<T>() where T: IEntrypoint
-            => Type?.GetConstructor(new Type[] { })?.Invoke(new object[] { }) is T entrypoint ? entrypoint : default;
+            => Type?.GetConstructor(new Type[] { })?.Invoke(new object[] { }) is T entrypoint ? entrypoint
+                : throw new PluginException($"Unable to initialize the specified entry-point ({Type.FullName}). Make sure that it's a class with at least one public parameterless (or default) constructor, and inheriting from {typeof(T).FullName}.");
         /// <summary>
         /// Override this method to specify the plugins' entry-point initialization logic.
         /// </summary>

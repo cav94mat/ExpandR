@@ -20,7 +20,7 @@ namespace cav94mat.ExpandR.Host
             AllowMultiple = allowMultiple;
             DefaultImplementations = defaultImpls ?? new ExposedImplementation[0];
             if (!AllowMultiple && DefaultImplementations.Length > 1)
-                throw new ArgumentException("Multiple default implementations defined for a service that only supports one.", nameof(defaultImpls));
+                throw new ArgumentException("The service supports at most one implementation.", nameof(defaultImpls));
         }
         /// <summary>
         /// Gets the lifetime of the service.

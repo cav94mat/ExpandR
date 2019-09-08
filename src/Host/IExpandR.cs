@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,7 +22,7 @@ namespace cav94mat.ExpandR.Host
         /// Searches for a compatible entry-point in the specified assembly, and call its <see cref="IEntrypoint.Setup">Setup</see> method.
         /// </summary>
         /// <param name="assembly">The plugin assembly.</param>
-        /// <exception cref="EntryPointNotFoundException">If the specified assembly doesn't have a suitable entry-point.</exception>
-        void LoadPlugin(Assembly dll);
+        /// <param name="options">Options for the plugins loader.</param>
+        void LoadPlugin(Assembly dll, PluginLoaderOptions options = default);
     }
 }

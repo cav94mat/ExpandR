@@ -11,34 +11,57 @@ namespace cav94mat.ExpandR.Host
     public static class ExpandRExtensions
     {
         #region LoadPlugin(s)
+        private const string DefaultDirPattern = "*.dll";
         /// <summary>
         /// Searches for a compatible entry-point in the specified file, and call its <see cref="IEntrypoint.Setup">Setup</see> method.
         /// </summary>
-        /// <param name="dll">The plugin assembly binary, to be loaded via reflection.</param>
-        /// <exception cref="EntryPointNotFoundException">If the specified assembly doesn't have a suitable entry-point.</exception>        
-        public static void LoadPlugin(this IExpandR expandr, FileInfo dll)
-            => expandr.LoadPlugin(Assembly.LoadFrom(dll.FullName));
-        /// <summary>
-        /// Searches for a compatible entry-point in every <c>.dll</c> file found in the specified directory, and call its <see cref="IEntrypoint.Setup">Setup</see> method.
-        /// </summary>
-        /// <param name="dllsFrom">The plugin assemblies directory, that are loaded via reflection after being sorted alphabetically.</param>
-        /// <exception cref="EntryPointNotFoundException">If one of the assemblies doesn't have a suitable entry-point.</exception>        
-        public static void LoadPlugins(this IExpandR expandr, DirectoryInfo dllsFrom)
+        /// <param name="file">The plugin assembly binary, to be loaded via reflection.</param>      
+        /// <param name="options">Options for the plugins loader.</param>
+        public static void LoadPlugin(this IExpandR expandr, FileInfo file, PluginLoaderOptions options = default)
         {
-            foreach (var dll in dllsFrom.GetFiles("*.dll").OrderBy(dllPath => dllPath.Name))
-                expandr.LoadPlugin(dll);
+            Assembly asm;
+            try
+            {
+                asm = Assembly.LoadFrom(file.FullName);
+            }
+            catch (Exception ex)
+            {
+                options?.RaiseError(expandr, new PluginErrorEventArgs() { Error = new PluginFileException(file, $"Invalid assembly file: {ex.Message}", ex) });
+                return;
+            }
+            expandr.LoadPlugin(asm, options);
         }
         /// <summary>
-        /// Searches for a compatible entry-point in every .dll file in the specified directory, and call its <see cref="IEntrypoint.Setup">Setup</see> method.
+        /// Searches for a compatible entry-point in every compatible plugin file found in the specified directory, and call its <see cref="IEntrypoint.Setup">Setup</see> method.
         /// </summary>
-        /// <param name="dllsFrom">The plugin assemblies directory, that are loaded via reflection after being sorted alphabetically.</param>
-        /// <exception cref="EntryPointNotFoundException">If any of the assemblies doesn't have a suitable entry-point.</exception> 
-        public static void LoadPlugins(this IExpandR expandr, string dllsPath)
+        /// <param name="directory">The plugin assemblies directory, that are loaded via reflection after being sorted alphabetically.</param>
+        /// <param name="options">Options for the plugins loader.</param>
+        /// <param name="pattern">Pattern to search for in the name of the files within the directory.</param> 
+        public static void LoadPlugins(this IExpandR expandr, DirectoryInfo directory, PluginLoaderOptions options = default, string pattern = DefaultDirPattern)
         {
-            if (Directory.Exists(dllsPath))
-                expandr.LoadPlugins(new DirectoryInfo(dllsPath));
+            Directory.CreateDirectory(directory.FullName);
+            foreach (var file in directory.GetFiles(pattern).OrderBy(dllPath => dllPath.Name))
+                expandr.LoadPlugin(file, options);
+        }
+        /// <summary>
+        /// Searches for a compatible entry-point in every compatible plugin file found in the specified directory, and call its <see cref="IEntrypoint.Setup">Setup</see> method.
+        /// </summary>
+        /// <param name="directory">The plugin assemblies directory, that are loaded via reflection after being sorted alphabetically.</param>
+        /// <param name="pattern">Pattern to search for in the name of the files within the directory.</param> 
+        public static void LoadPlugins(this IExpandR expandr, DirectoryInfo directory, string pattern)
+            => expandr.LoadPlugins(directory, default, pattern);
+        /// <summary>
+        /// Searches for a compatible entry-point in every compatible plugin file found in the specified directory, and call its <see cref="IEntrypoint.Setup">Setup</see> method.
+        /// </summary>
+        /// <param name="path">Either the path of a directory or an existing file.</param>
+        /// <param name="options">Options for the plugins loader.</param>
+        /// <param name="pattern">Pattern to search for in the name of the files within the directory, if a directory path was supplied.</param> 
+        public static void LoadPlugins(this IExpandR expandr, string path, PluginLoaderOptions options = default, string pattern = DefaultDirPattern)
+        {
+            if (File.Exists(path))
+                expandr.LoadPlugin(new FileInfo(Path.GetDirectoryName(path)), options);
             else
-                expandr.LoadPlugin(new FileInfo(dllsPath));
+                expandr.LoadPlugins(new DirectoryInfo(path), options, pattern);
         }
         #endregion
         #region Expose

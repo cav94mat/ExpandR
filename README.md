@@ -24,16 +24,16 @@ namespace MyHost {
         {
             // Expose `IHelpPrinter` as a singleton, accepting only one implementation.
             //  If no plugin implements it, `DefaultHelpPrinter` is used.
-            pluggableServices.AddSingleton<IHelpPrinter, DefaultHelpPrinter>();        
+            pluggableServices.ExposeSingleton<IHelpPrinter, DefaultHelpPrinter>();        
             
             // Expose `ICommand` as transient, accepting multiple implementations.
             //  At least two implementations (`EchoCommand` and` HelpCommand`) are always registered before
             //  any plugin is loaded.
-            pluggableServices.AddMultiTransient<ICommand>(typeof(EchoCommand), typeof(HelpCommand));
+            pluggableServices.ExposeMultiTransient<ICommand>(typeof(EchoCommand), typeof(HelpCommand));
 
             // Load plugins from the /plugins sub-directory
             var plugDir = new DirectoryInfo(Directory.GetCurrentDirectory()).CreateSubdirectory("plugins");
-            pluggableServices.Load(plugDir);
+            pluggableServices.LoadPlugins(plugDir);
         });
     }
   }

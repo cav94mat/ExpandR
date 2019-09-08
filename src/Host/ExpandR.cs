@@ -22,15 +22,27 @@ namespace cav94mat.ExpandR.Host
         }
         public void Expose(Type type, ServiceLifetime lifetime, bool multiple, params ExposedImplementation[] defaultImpl)
             => _defs.Add(type, new ExposedService(lifetime, multiple, defaultImpl));
-        public void LoadPlugin(Assembly assembly)
+        public void LoadPlugin(Assembly assembly, PluginLoaderOptions options)
         {
-            var attr = assembly.GetCustomAttribute<T>();
-            if (attr is null)
-                throw new EntryPointNotFoundException($"The extension assembly is not decorated with the attribute {typeof(T).FullName}.");
-            var entryPoint = attr.OnInitialization();
-            if (entryPoint is null)
-                throw new EntryPointNotFoundException($"The extension entry-point was not properly initialized.");
-            entryPoint.Setup(new ServiceCollectionExtender(_services, _defs));
+            try
+            {
+                var loadingEvent = new PluginLoadingEventArgs { PluginAssembly = assembly };
+                options?.RaiseLoading(this, loadingEvent);
+                if (loadingEvent.Skip)
+                    return;
+                var attr = assembly.GetCustomAttribute<T>();
+                if (attr is null)
+                    throw new PluginException($"The plugin assembly is not decorated with {typeof(T).FullName}.");
+                var entryPoint = attr.OnInitialization();
+                if (entryPoint is null)
+                    throw new PluginException($"The plugin entry-point couldn't be initialized.");
+                entryPoint.Setup(new ServiceCollectionExtender(_services, _defs));
+                options?.RaiseLoaded(this, loadingEvent);
+            }
+            catch (Exception ex)
+            {
+                options?.RaiseError(this, new PluginErrorEventArgs() { PluginAssembly = assembly, Error = ex});                    
+            } 
         }
         internal void AddDefaults()
         {
