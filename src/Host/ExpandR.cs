@@ -20,8 +20,8 @@ namespace cav94mat.ExpandR.Host
         {
             _services = services;
         }
-        public void Expose(Type type, ServiceLifetime lifetime, bool multiple, params ExposedImplementation[] defaultImpl)
-            => _defs.Add(type, new ExposedService(lifetime, multiple, defaultImpl));
+        public void Expose(Type type, ServiceLifetime lifetime, bool multiple, params ExposedImplementation[] defaultImpls)
+            => _defs.Add(type, new ExposedService(lifetime, multiple, defaultImpls));
         public void LoadPlugin(Assembly assembly, PluginLoaderOptions options)
         {
             try
