@@ -15,6 +15,7 @@
     <RootNamespace>cav94mat.ExpandR</RootNamespace>
     <AssemblyName>cav94mat.ExpandR</AssemblyName>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <Product>ExpandR</Product>
   </PropertyGroup>
 
   <ItemGroup>

@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using cav94mat.ExpandR.Host;
 using cav94mat.ExpandR.Tests.Base;
 using cav94mat.ExpandR.Tests.Mock;
+using cav94mat.ExpandR.Tests.Mock.Entrypoints;
+using cav94mat.ExpandR.Tests.Mock.Host;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -34,7 +36,7 @@ namespace cav94mat.ExpandR.Tests
             });
             using var services = ioc.BuildServiceProvider();
             // Call the services
-            services.GetService<IMockServiceA>().MethodA();    // --> MockImplA.SomeMethod()
+            services.GetService<IMockServiceA>().MethodA(); // --> MockImplA.SomeMethod()
             services.GetService<IMockServiceB>().MethodB(); // --> MockImplB.SomeMethod()
         }
         /// <summary>
@@ -70,6 +72,19 @@ namespace cav94mat.ExpandR.Tests
             var bImpls = new List<IMockServiceB>(services.GetServices<IMockServiceB>());
             Assert.Empty(bImpls);
         }
-
+        [Fact]
+        public void TestGenericTypes()
+        {
+            var ioc = new ServiceCollection();
+            ioc.AddExpandR<GenEntrypoint>(configure =>
+            {
+                // Services
+                configure.Expose(typeof(IMockGeneric<>), ServiceLifetime.Singleton, false);
+                // Plugins
+                configure.LoadPlugin(TestAssembly); // Test plugin
+            });
+            using var services = ioc.BuildServiceProvider();
+            Assert.Equal(nameof(IMockServiceA), services.GetRequiredService<IMockGeneric<IMockServiceA>>().GetTypeName());
+        }
     }
 }

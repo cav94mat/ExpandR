@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace cav94mat.ExpandR.Host
@@ -30,7 +31,8 @@ namespace cav94mat.ExpandR.Host
                 options?.RaiseLoading(this, loadingEvent);
                 if (loadingEvent.Skip)
                     return;
-                var attr = assembly.GetCustomAttribute<T>();
+                var attrs = assembly.GetCustomAttributes<T>(); // Exact match
+                var attr = attrs.FirstOrDefault(t => t.GetType() == typeof(T)) ?? attrs.FirstOrDefault();
                 if (attr is null)
                     throw new PluginException($"The plugin assembly is not decorated with {typeof(T).FullName}.");
                 var entryPoint = attr.OnInitialization();

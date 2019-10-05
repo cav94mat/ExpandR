@@ -28,6 +28,13 @@ namespace cav94mat.ExpandR.Host
             };
         }
         /// <summary>
+        /// Defines a factory-backed implementation that isn't constrained on a specific output type.
+        /// </summary>
+        /// <param name="factory">Factory definition.</param>       
+        public static ExposedImplementation FromUnconstrainedFactory(Func<IServiceProvider, object> factory)
+            => FromFactory<object>(factory);
+        
+        /// <summary>
         /// Defines a type-backed implementation.
         /// </summary>
         /// <param name="implType">Type of the implementation.</param>

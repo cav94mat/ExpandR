@@ -1,8 +1,9 @@
 ﻿using cav94mat.ExpandR;
+using cav94mat.ExpandR.Tests.Mock.Entrypoints;
 
-[assembly: Entrypoint(typeof(cav94mat.ExpandR.Tests.Mock.MockEntrypoint))]
+[assembly: Entrypoint(typeof(MockEntrypoint))]
 
-namespace cav94mat.ExpandR.Tests.Mock
+namespace cav94mat.ExpandR.Tests.Mock.Entrypoints
 {
     public class MockEntrypoint : IEntrypoint
     {
